@@ -29,12 +29,16 @@ int main(int argc, char* argv[]) {
     std::ifstream train(argv[1]);
     std::string line;
     int counter = 0;
+    float progress = 0.0;
+    int progressWidth = 90;
+    std::cout << "Creating training data...\n";
     while (std::getline(train, line)) {
+        std::cout << "[";
         std::vector<float> vec = parseLine(line);
-        if (line == "\n") {
+        if (counter >= 60000) {
             break;
         }
-        if (counter / 3000 == 0) {
+        if (counter / 30000 == 0) {
             train_x.push_back(vec);
             train_y.push_back(0);
         }
@@ -46,14 +50,34 @@ int main(int argc, char* argv[]) {
             train_y.push_back(1);
         }
         counter++;
+        progress = (float)counter / 90000.0;
+        int pos = progressWidth * progress;
+        for (int i = 0; i < progressWidth; ++i) {
+            if (i < pos) std::cout << "=";
+            else if (i == pos) std::cout << ">";
+            else std::cout << " ";
+        }
+        std::cout << "] " << int(progress * 100.0) << " %\r";
+        std::cout.flush();
     }
     train.close();
-    for (int i = 0; i < 3000; i++) {
+    for (int i = 0; i < 30000; i++) {
         std::vector<float> rand = createRandVec();
         std::vector<float> norm = normalize(rand);
         train_x.push_back(norm);
         train_y.push_back(2);
+        counter++;
+        progress = (float)counter / 90000.0;
+        int pos = progressWidth * progress;
+        for (int i = 0; i < progressWidth; ++i) {
+            if (i < pos) std::cout << "=";
+            else if (i == pos) std::cout << ">";
+            else std::cout << " ";
+        }
+        std::cout << "] " << int(progress * 100.0) << " %\r";
+        std::cout.flush();
     }
+    std::cout << "\nSaving training data...\n";
     {
         std::ofstream file(argv[2], std::ios::binary);
         cereal::PortableBinaryOutputArchive oarchive(file);
